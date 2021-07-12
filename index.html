@@ -1,10 +1,148 @@
-<!Doctype html>
-<html>
-  <head>
-    <meta charset="uTF-8"/>
-    <title>Personal Blog</title>
-  </head>
-  <body>
-    <h1>Testing for my Personal Blog</h1>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+    <title>Title</title>
+</head>
+<body>
+    <div class="container mt-2">
+        <!-- nav or header of web -->
+        <div class="d-flex flex-column flex-lg-row flex-md-row bg-secondary rounded">
+            <div class="justify-content-start m-3">
+                <h1 class="fw-bold text-light">Covid Info</h1>
+            </div>
+            <div class="flex-fill"></div>
+            <div class="justify-content-end" >
+                <div class="bg-light m-md-4 m-lg-4 m-0 p-md-0 p-lg-0 pt-1 pb-1">
+                    <div class="input-group border border-3 border-dark">
+                        <input type="text" id="search" class="form-control">
+                        <span class="input-group-text">Search</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- loading page before get data  -->
+        <div id="loading-page" style="width:130px;margin: 200px auto">
+            <span class="spinner-grow text-dark"></span>
+            <span class="spinner-grow text-secondary"></span>
+            <span class="spinner-grow text-info"></span>
+            <span class="spinner-grow text-warning"></span>
+            <span class="spinner-grow text-dark"></span>
+            <span class="spinner-grow text-secondary"></span>
+            <span class="spinner-grow text-info"></span>
+            <span class="spinner-grow text-warning"></span>
+            <span class="spinner-grow text-warning"></span>
+        </div>
+
+        <div class="row g-3 mt-2" id="main">
+            <!-- data will appear here -->
+        </div>
+
+    </div>
+<script>
+    
+    // function for create card view of each country data
+    function addRow(data) {
+        // pre define require data name as array to easy in later step
+        let info = [
+            "NewConfirmed",
+            "TotalConfirmed",
+            "NewDeaths",
+            "TotalDeaths",
+            "NewRecovered",
+            "TotalRecovered",
+            ]
+
+        // create require html tags
+        let col = document.createElement("div")
+        let card = document.createElement("div")
+        let card_header = document.createElement("div")
+        let card_title = document.createElement("h5")
+        let card_body = document.createElement("div")
+        let card_table = document.createElement("table")
+        let card_tbody = document.createElement("tbody")
+        
+        // add require class and style to html tags
+        card.setAttribute("class", "card border border-3 border-warning")
+        card.style.height = "330px"
+        card_header.setAttribute("class", "card-header")
+        card_body.setAttribute("class", "card-body")
+        card_table.setAttribute("class", "table")
+        card_title.setAttribute("class", "card-title")
+        col.setAttribute("class", "col-12 col-lg-3 col-md-6")
+
+        // auto add table data with loop
+        info.map( i => {
+            let card_table_tr = document.createElement("tr")
+            let card_table_td = document.createElement("td")
+            let card_table_td1 = document.createElement("td")
+
+            card_table_td.textContent = i
+            card_table_td1.textContent = data[i]
+            card_table_tr.append(card_table_td)
+            card_table_tr.append(card_table_td1)
+            card_tbody.append(card_table_tr)
+        })
+
+        // append created html tags 
+        card_table.append(card_tbody)
+        card_body.append(card_table)
+        card_title.textContent = data['Country']
+        card_header.append(card_title)
+        card.append(card_header)
+        card.append(card_body)
+        col.append(card)
+        document.querySelector("#main").append(col)
+    }
+
+    let stored_data // to store response data to search for later
+    let country_names = [] // to store country names
+
+    async function covidInfo() {
+        
+        const response = await fetch("https://api.covid19api.com/summary")
+        const data = await response.json()
+
+        const allCountries = data.Countries
+        stored_data = allCountries
+        // to store all country names in lower case
+        for(country_name of stored_data) {
+            country_names.push(country_name.Country.toLowerCase())
+        }
+
+        // to hide loading page
+        document.querySelector("#loading-page").style.display = "none"
+
+        // show all data with loop
+        for(country of allCountries) {
+            addRow(country)
+        }
+
+        //search country function
+        function search(){
+            let search_string = document.querySelector("#search").value.toLowerCase()
+            let match_countries = country_names.filter( c => c.indexOf(search_string) >= 0)
+            let match_data = stored_data.filter( dt => match_countries.indexOf(dt.Country.toLowerCase()) >= 0)
+            document.querySelector("#main").innerHTML = ""
+            console.log(match_data)
+            for(country of match_data) {
+                addRow(country)
+            }
+        }
+        // select html tag for search function
+        document.querySelector("#search").addEventListener("keyup", search)
+
+    }
+
+    covidInfo()
+
+    
+
+</script>
+</body>
 </html>
+<!-- Code By WaiYanKyaw -->
